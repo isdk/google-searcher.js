@@ -38,6 +38,7 @@ In addition to standard `SearchOptions`, `GoogleSearcher` maps the following:
 | `category` | `string` | Search category: `'images'`, `'videos'`, `'news'`. Maps to `tbm`. |
 | `safeSearch` | `string` | `'off'`, `'strict'`. Maps to `safe`. |
 | `offset` | `number` | Starting index (0-based). Maps to `start`. |
+| `needDate` | `boolean` | If `true`, will attempt to fetch and extract publication dates for each result if not found in snippets. |
 
 ## Implementation Details
 

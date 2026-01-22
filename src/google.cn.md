@@ -38,6 +38,7 @@ const results = await WebSearcher.search('google', 'typescript 最佳实践', {
 | `category` | `string` | 搜索分类：`'images'` (图片), `'videos'` (视频), `'news'` (新闻)。映射为 `tbm`。 |
 | `safeSearch` | `string` | 安全搜索级别：`'off'` (关闭), `'strict'` (严格)。映射为 `safe`。 |
 | `offset` | `number` | 起始条目偏移量 (从0开始)。映射为 `start`。 |
+| `needDate` | `boolean` | 是否需要提取发布日期。设为 `true` 时，若摘要中未找到日期，会异步抓取目标页面分析日期。 |
 
 ## 实现细节
 

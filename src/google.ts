@@ -1,5 +1,7 @@
+import pLimit from 'p-limit';
 import { FetcherOptions } from '@isdk/web-fetcher';
 import { PaginationConfig, SearchOptions, WebSearcher } from '@isdk/web-searcher';
+import { extractDate } from './extractor/index.js';
 
 export class GoogleSearcher extends WebSearcher {
   static override alias = ['google'];
@@ -128,11 +130,11 @@ export class GoogleSearcher extends WebSearcher {
     };
   }
 
-  protected override async transform(outputs: Record<string, any>): Promise<any[]> {
+  protected override async transform(outputs: Record<string, any>, options: SearchOptions = {}): Promise<any[]> {
     const results = outputs['results'] || [];
     if (!Array.isArray(results)) return [];
 
-    return results.map(item => {
+    const processedResults = results.map(item => {
       // 1. Clean URL
       if (item.url && item.url.startsWith('/url?q=')) {
         try {
@@ -144,20 +146,45 @@ export class GoogleSearcher extends WebSearcher {
         }
       }
 
-            // 2. Extract Date from Snippet (HTML based)
-            // Pattern: <span class="YrbPuc"><span><span></span>DateString</span> — </span>
-            if (item.snippet) {
-              // More flexible regex to handle attributes and inner tags like <em>
-              const dateRegex = /<span[^>]*>\s*<span[^>]*>\s*<span[^>]*><\/span>(.+?)<\/span>\s*(?:—|·)\s*<\/span>/;
-              const match = item.snippet.match(dateRegex);
+      // 2. Extract Date from Snippet (HTML based) - Fast pass
+      // Pattern: <span class="YrbPuc"><span><span></span>DateString</span> — </span>
+      if (item.snippet) {
+        // More flexible regex to handle attributes and inner tags like <em>
+        const dateRegex = /<span[^>]*>\s*<span[^>]*>\s*<span[^>]*><\/span>(.+?)<\/span>\s*(?:—|·)\s*<\/span>/;
+        const match = item.snippet.match(dateRegex);
 
-              if (match) {
-                // Extract and clean the date string (remove <em> etc.)
-                item.date = match[1].replace(/<[^>]*>/g, '').trim();
-                // Remove the date part from HTML, keep the rest HTML intact
-                item.snippet = item.snippet.replace(match[0], '').trim();
+        if (match) {
+          // Extract and clean the date string (remove <em> etc.)
+          item.date = match[1].replace(/<[^>]*>/g, '').trim();
+          // Remove the date part from HTML, keep the rest HTML intact
+          item.snippet = item.snippet.replace(match[0], '').trim();
+        }
+      }
+      return item;
+    });
+
+    // 3. Deep Date Extraction (Secondary Fetch) - Optional
+    if (options.needDate) {
+      const limit = pLimit(options.concurrency || 5);
+      const tasks = processedResults.map(item =>
+        limit(async () => {
+          // Only extract if date is missing and URL exists
+          if (item.url && !item.date) {
+            try {
+              // Try to extract date from the landing page
+              const date = await extractDate(item.url, { timeout: 5000 });
+              if (date) {
+                item.date = date;
               }
+            } catch (e) {
+              // Ignore extraction errors
             }
-            return item;
-          });
-        }}
+          }
+        })
+      );
+      await Promise.all(tasks);
+    }
+
+    return processedResults;
+  }
+}
