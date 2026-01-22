@@ -1,2 +1,2 @@
-export * from './google';
-export * from './bing';
+export * from './google'
+export * from './bing'

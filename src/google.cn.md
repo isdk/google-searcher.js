@@ -12,33 +12,33 @@
 ## 使用方法
 
 ```typescript
-import { GoogleSearcher, WebSearcher } from '@isdk/ai-tools';
+import { GoogleSearcher, WebSearcher } from '@isdk/ai-tools'
 
 // 注册引擎 (如果尚未注册)
-WebSearcher.register(GoogleSearcher);
+WebSearcher.register(GoogleSearcher)
 
 const results = await WebSearcher.search('google', 'typescript 最佳实践', {
   limit: 20,
   region: 'US',
   language: 'zh-CN',
-  timeRange: 'year'
-});
+  timeRange: 'year',
+})
 ```
 
 ## 配置选项
 
 `GoogleSearcher` 支持并将以下标准 `SearchOptions` 映射到 Google 参数：
 
-| 选项 | 类型 | 说明 |
-| :--- | :--- | :--- |
-| `region` | `string` | 地区代码 (ISO 3166-1 alpha-2，如 'US', 'CN')。映射为 `gl` 参数。 |
-| `language` | `string` | 界面语言代码 (ISO 639-1，如 'en', 'zh-CN')。映射为 `hl` 参数。 |
-| `timeRange` | `string` | 时间范围过滤：支持 `'hour'` (小时), `'day'` (天), `'week'` (周), `'month'` (月), `'year'` (年)。映射为 `tbs=qdr:...`。 |
-| `timeRange` (自定义) | `{ from: Date, to?: Date }` | 自定义时间范围。映射为 `tbs=cdr:1,cd_min:...,cd_max:...`。 |
-| `category` | `string` | 搜索分类：`'images'` (图片), `'videos'` (视频), `'news'` (新闻)。映射为 `tbm`。 |
-| `safeSearch` | `string` | 安全搜索级别：`'off'` (关闭), `'strict'` (严格)。映射为 `safe`。 |
-| `offset` | `number` | 起始条目偏移量 (从0开始)。映射为 `start`。 |
-| `needDate` | `boolean` | 是否需要提取发布日期。设为 `true` 时，若摘要中未找到日期，会异步抓取目标页面分析日期。 |
+| 选项                 | 类型                        | 说明                                                                                                                   |
+| :------------------- | :-------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `region`             | `string`                    | 地区代码 (ISO 3166-1 alpha-2，如 'US', 'CN')。映射为 `gl` 参数。                                                       |
+| `language`           | `string`                    | 界面语言代码 (ISO 639-1，如 'en', 'zh-CN')。映射为 `hl` 参数。                                                         |
+| `timeRange`          | `string`                    | 时间范围过滤：支持 `'hour'` (小时), `'day'` (天), `'week'` (周), `'month'` (月), `'year'` (年)。映射为 `tbs=qdr:...`。 |
+| `timeRange` (自定义) | `{ from: Date, to?: Date }` | 自定义时间范围。映射为 `tbs=cdr:1,cd_min:...,cd_max:...`。                                                             |
+| `category`           | `string`                    | 搜索分类：`'images'` (图片), `'videos'` (视频), `'news'` (新闻)。映射为 `tbm`。                                        |
+| `safeSearch`         | `string`                    | 安全搜索级别：`'off'` (关闭), `'strict'` (严格)。映射为 `safe`。                                                       |
+| `offset`             | `number`                    | 起始条目偏移量 (从0开始)。映射为 `start`。                                                                             |
+| `needDate`           | `boolean`                   | 是否需要提取发布日期。设为 `true` 时，若摘要中未找到日期，会异步抓取目标页面分析日期。                                 |
 
 ## 实现细节
 

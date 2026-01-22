@@ -1,10 +1,14 @@
-import pLimit from 'p-limit';
-import { FetcherOptions } from '@isdk/web-fetcher';
-import { PaginationConfig, SearchOptions, WebSearcher } from '@isdk/web-searcher';
-import { extractDate } from './extractor/index.js';
+import pLimit from 'p-limit'
+import { FetcherOptions } from '@isdk/web-fetcher'
+import {
+  PaginationConfig,
+  SearchOptions,
+  WebSearcher,
+} from '@isdk/web-searcher'
+import { extractDate } from './extractor/index.js'
 
 export class GoogleSearcher extends WebSearcher {
-  static override alias = ['google'];
+  static override alias = ['google']
 
   override get template(): FetcherOptions {
     return {
@@ -32,7 +36,12 @@ export class GoogleSearcher extends WebSearcher {
         // { id: 'waitFor', params: { selector: '#main #search' } }, // 等待第一次搜索结果
 
         // 2. 二次跳转：应用高级参数 (如果有)，此时已有信任基础
-        { id: 'goto', params: { url: 'https://www.google.com/search?q=${query}${extraParams}' } },
+        {
+          id: 'goto',
+          params: {
+            url: 'https://www.google.com/search?q=${query}${extraParams}',
+          },
+        },
         // { id: 'waitFor', params: { networkIdle: true, ms: 5500 } },
         //  {
         //   id: 'evaluate',
@@ -42,23 +51,30 @@ export class GoogleSearcher extends WebSearcher {
         //   }
         // },
         { id: 'waitFor', params: { selector: '#main #search' } }, // 等待最终结果
-        { "action": "trim", "params": { "presets": "all" } },
+        { action: 'trim', params: { presets: 'all' } },
         {
           id: 'extract',
           storeAs: 'results',
-          "params": {
-            "type": "array",
-            "mode": { "type": "segmented", "anchor": "a:has(h3)" },
-            "selector": "#main #search",
-            "items": {
-              "url": { "selector": "a:has(h3)", "attribute": "href", "required": true },
-              "title": { "selector": "a:has(h3) h3", "required": true, "mode": "innerText" },
-              "snippet": { "selector": "div[style*='-webkit-line-clamp']", "type": "html" }
-            }
-          }
-        }
-      ]
-    };
+          params: {
+            type: 'array',
+            mode: { type: 'segmented', anchor: 'a:has(h3)' },
+            selector: '#main #search',
+            items: {
+              url: { selector: 'a:has(h3)', attribute: 'href', required: true },
+              title: {
+                selector: 'a:has(h3) h3',
+                required: true,
+                mode: 'innerText',
+              },
+              snippet: {
+                selector: "div[style*='-webkit-line-clamp']",
+                type: 'html',
+              },
+            },
+          },
+        },
+      ],
+    }
   }
 
   override get pagination(): PaginationConfig {
@@ -66,12 +82,14 @@ export class GoogleSearcher extends WebSearcher {
       type: 'url-param',
       paramName: 'start',
       startValue: 0,
-      increment: 10
-    };
+      increment: 10,
+    }
   }
 
-  protected override formatOptions(options: SearchOptions): Record<string, any> {
-    const params = new URLSearchParams();
+  protected override formatOptions(
+    options: SearchOptions
+  ): Record<string, any> {
+    const params = new URLSearchParams()
 
     // Map Time Range
     if (options.timeRange) {
@@ -82,18 +100,24 @@ export class GoogleSearcher extends WebSearcher {
           week: 'qdr:w',
           month: 'qdr:m',
           year: 'qdr:y',
-        };
+        }
         if (timeMap[options.timeRange]) {
-          params.set('tbs', timeMap[options.timeRange]);
+          params.set('tbs', timeMap[options.timeRange])
         }
       } else {
         // Custom Range
-        const fromDate = new Date(options.timeRange.from);
-        const toDate = options.timeRange.to ? new Date(options.timeRange.to) : new Date();
+        const fromDate = new Date(options.timeRange.from)
+        const toDate = options.timeRange.to
+          ? new Date(options.timeRange.to)
+          : new Date()
 
         if (!isNaN(fromDate.getTime()) && !isNaN(toDate.getTime())) {
-           const format = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-           params.set('tbs', `cdr:1,cd_min:${format(fromDate)},cd_max:${format(toDate)}`);
+          const format = (d: Date) =>
+            `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
+          params.set(
+            'tbs',
+            `cdr:1,cd_min:${format(fromDate)},cd_max:${format(toDate)}`
+          )
         }
       }
     }
@@ -104,43 +128,46 @@ export class GoogleSearcher extends WebSearcher {
         images: 'isch',
         videos: 'vid',
         news: 'nws',
-      };
+      }
       if (catMap[options.category]) {
-        params.set('tbm', catMap[options.category]);
+        params.set('tbm', catMap[options.category])
       }
     }
 
     // Map Region/Language
-    if (options.region) params.set('gl', options.region);
-    if (options.language) params.set('hl', options.language);
+    if (options.region) params.set('gl', options.region)
+    if (options.language) params.set('hl', options.language)
 
     // Map SafeSearch
     if (options.safeSearch) {
-        if (options.safeSearch === 'strict') params.set('safe', 'active');
-        else if (options.safeSearch === 'off') params.set('safe', 'images');
+      if (options.safeSearch === 'strict') params.set('safe', 'active')
+      else if (options.safeSearch === 'off') params.set('safe', 'images')
     }
 
     if (options.offset && options.offset > 0) {
-      params.set('start', options.offset.toString());
+      params.set('start', options.offset.toString())
     }
 
-    const paramStr = params.toString();
+    const paramStr = params.toString()
     return {
-        extraParams: paramStr ? '&' + paramStr : ''
-    };
+      extraParams: paramStr ? '&' + paramStr : '',
+    }
   }
 
-  protected override async transform(outputs: Record<string, any>, options: SearchOptions = {}): Promise<any[]> {
-    const results = outputs['results'] || [];
-    if (!Array.isArray(results)) return [];
+  protected override async transform(
+    outputs: Record<string, any>,
+    options: SearchOptions = {}
+  ): Promise<any[]> {
+    const results = outputs['results'] || []
+    if (!Array.isArray(results)) return []
 
-    const processedResults = results.map(item => {
+    const processedResults = results.map((item) => {
       // 1. Clean URL
       if (item.url && item.url.startsWith('/url?q=')) {
         try {
-          const urlObj = new URL(item.url, 'https://www.google.com');
-          const realUrl = urlObj.searchParams.get('q');
-          if (realUrl) item.url = realUrl;
+          const urlObj = new URL(item.url, 'https://www.google.com')
+          const realUrl = urlObj.searchParams.get('q')
+          if (realUrl) item.url = realUrl
         } catch (e) {
           // Ignore
         }
@@ -150,41 +177,42 @@ export class GoogleSearcher extends WebSearcher {
       // Pattern: <span class="YrbPuc"><span><span></span>DateString</span> — </span>
       if (item.snippet) {
         // More flexible regex to handle attributes and inner tags like <em>
-        const dateRegex = /<span[^>]*>\s*<span[^>]*>\s*<span[^>]*><\/span>(.+?)<\/span>\s*(?:—|·)\s*<\/span>/;
-        const match = item.snippet.match(dateRegex);
+        const dateRegex =
+          /<span[^>]*>\s*<span[^>]*>\s*<span[^>]*><\/span>(.+?)<\/span>\s*(?:—|·)\s*<\/span>/
+        const match = item.snippet.match(dateRegex)
 
         if (match) {
           // Extract and clean the date string (remove <em> etc.)
-          item.date = match[1].replace(/<[^>]*>/g, '').trim();
+          item.date = match[1].replace(/<[^>]*>/g, '').trim()
           // Remove the date part from HTML, keep the rest HTML intact
-          item.snippet = item.snippet.replace(match[0], '').trim();
+          item.snippet = item.snippet.replace(match[0], '').trim()
         }
       }
-      return item;
-    });
+      return item
+    })
 
     // 3. Deep Date Extraction (Secondary Fetch) - Optional
     if (options.needDate) {
-      const limit = pLimit(options.concurrency || 5);
-      const tasks = processedResults.map(item =>
+      const limit = pLimit(options.concurrency || 5)
+      const tasks = processedResults.map((item) =>
         limit(async () => {
           // Only extract if date is missing and URL exists
           if (item.url && !item.date) {
             try {
               // Try to extract date from the landing page
-              const date = await extractDate(item.url, { timeout: 5000 });
+              const date = await extractDate(item.url, { timeout: 5000 })
               if (date) {
-                item.date = date;
+                item.date = date
               }
             } catch (e) {
               // Ignore extraction errors
             }
           }
         })
-      );
-      await Promise.all(tasks);
+      )
+      await Promise.all(tasks)
     }
 
-    return processedResults;
+    return processedResults
   }
 }
