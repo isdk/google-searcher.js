@@ -12,7 +12,7 @@
 ## 使用方法
 
 ```typescript
-import { GoogleSearcher, WebSearcher } from '@isdk/ai-tools'
+import { GoogleSearcher, WebSearcher } from '@isdk/google-searcher'
 
 // 注册引擎 (如果尚未注册)
 WebSearcher.register(GoogleSearcher)

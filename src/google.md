@@ -12,7 +12,7 @@ The `GoogleSearcher` is a specialized search engine scraper for Google, built on
 ## Usage
 
 ```typescript
-import { GoogleSearcher, WebSearcher } from '@isdk/ai-tools'
+import { GoogleSearcher, WebSearcher } from '@isdk/google-searcher'
 
 // Register if not already done
 WebSearcher.register(GoogleSearcher)
