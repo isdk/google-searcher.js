@@ -17,6 +17,9 @@ export class GoogleSearcher extends WebSearcher {
       timeoutMs: 300_000, // 5 minutes
       browser: {
         headless: false, // 显示浏览器窗口方面人机交互
+        launchOptions: {
+          slowMo: 600,
+        },
       },
       debug: true,
       storage: {
@@ -25,10 +28,16 @@ export class GoogleSearcher extends WebSearcher {
       },
       // url: 'https://www.google.com',
       actions: [
-        // { id: 'goto', params: { url: 'https://www.google.com/search?q=${query}' } },
+        // { id: 'goto', params: { url: 'https://www.google.com' } },
 
         // 模拟人类行为：先等待，建立 Session 和指纹信任, 这样没用
-        // { id: 'waitFor', params: { ms: 200 } },
+        // { id: 'waitFor', params: { selector: 'textarea[name="q"]', ms: 200 } },
+        // // 模拟鼠标移动点击
+        // { id: 'mouseClick', params: { selector: 'textarea[name="q"]' } },
+        // { id: 'keyboardType', params: { text: '${query}' } },
+        // { id: 'keyboardPress', params: { key: 'Enter' } },
+        // { id: 'waitFor', params: { networkIdle: true, ms: 1000 } },
+
         // 1. 首次搜索：模拟人类输入并提交，建立信任
         // { id: 'fill', params: { selector: 'textarea[name="q"]', value: '${query}' } },
         // { id: 'waitFor', params: { ms: 10 } },
