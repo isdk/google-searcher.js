@@ -1,6 +1,6 @@
 {
   "name": "@isdk/google-searcher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Standardized Google search engine scrapers for @isdk/ai-tools, featuring automated pagination, session persistence, and robust metadata extraction (e.g., publication dates).",
   "license": "MIT",
   "author": "Riceball LEE <snowyu.lee@gmail.com>",
