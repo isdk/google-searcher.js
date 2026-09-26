@@ -14,6 +14,7 @@ export default defineConfig({
     //   drop_console: true,
     //   drop_debugger: true,
     // },
+    keep_classnames: /GoogleSearcher$/,
     // https://terser.org/docs/options/#mangle-options
     "mangle": {
       "properties": {
